@@ -91,7 +91,6 @@ mod tests {
   fn should_read_commits_from_head() {
     let fixture = FixtureRepository::setup_with_script(
       r#"
-      git switch --orphan test
       git commit --allow-empty -m "1"
       git commit --allow-empty -m "2"
       git commit --allow-empty -m "3"
@@ -111,7 +110,6 @@ mod tests {
   fn should_read_commits_from_oid() {
     let fixture = FixtureRepository::setup_with_script(
       r#"
-      git switch --orphan test
       git commit --allow-empty -m "1"
       git commit --allow-empty -m "2"
       git commit --allow-empty -m "3"
@@ -135,7 +133,6 @@ mod tests {
   fn should_read_commits_by_limited() {
     let fixture = FixtureRepository::setup_with_script(
       r#"
-      git switch --orphan test
       git commit --allow-empty -m "1"
       git commit --allow-empty -m "2"
       git commit --allow-empty -m "3"
