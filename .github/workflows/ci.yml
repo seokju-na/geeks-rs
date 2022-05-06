@@ -1,15 +1,15 @@
 name: CI
 on: [pull_request]
+env:
+  RUST_BACKTRACE: 'full'
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        build: [msrv, stable, nightly]
+        build: [stable, nightly]
         include:
-          - build: msrv
-            toolchain: 1.56
           - build: stable
             toolchain: stable
           - build: nightly
@@ -32,7 +32,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
-
       - name: Install nightly toolchain
         uses: actions-rs/toolchain@v1
         with:
