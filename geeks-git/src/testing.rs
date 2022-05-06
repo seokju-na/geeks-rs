@@ -23,6 +23,7 @@ pub(crate) mod git {
             mkdir -p {}
             cd {}
             git init
+            git show HEAD
             {}
             "#,
         path, path, setup_script
