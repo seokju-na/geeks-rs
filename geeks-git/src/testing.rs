@@ -28,8 +28,12 @@ pub(crate) mod git {
             "#,
         path, path, setup_script
       );
-      let result = run(&init_script, &vec![], &ScriptOptions::new()).unwrap();
-      println!("script result: {}", result.1);
+      let (exit_code, output, error) = run(&init_script, &vec![], &ScriptOptions::new()).unwrap();
+      if exit_code != 0 {
+        println!("script err: {}", error);
+        panic!("exit with {}", exit_code);
+      }
+      println!("script output: {}", output);
 
       Self {
         path: path.to_owned(),
