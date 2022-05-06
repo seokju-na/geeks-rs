@@ -28,7 +28,8 @@ pub(crate) mod git {
             "#,
         path, path, setup_script
       );
-      run(&init_script, &vec![], &ScriptOptions::new()).unwrap();
+      let result = run(&init_script, &vec![], &ScriptOptions::new()).unwrap();
+      println!("script result: {}", result.1);
 
       Self {
         path: path.to_owned(),
