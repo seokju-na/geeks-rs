@@ -1,5 +1,5 @@
 [package]
-name = "geeks_event_git"
+name = "geeks_git"
 description = "Git crate for geeks productions."
 license = "MIT"
 version = "0.1.0"
