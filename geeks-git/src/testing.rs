@@ -22,7 +22,7 @@ pub(crate) mod git {
         r#"
             mkdir -p {}
             cd {}
-            git init
+            git init -b main
             git show HEAD
             {}
             "#,
