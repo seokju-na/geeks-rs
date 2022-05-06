@@ -6,7 +6,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-git2 = "0.13.25"
+git2 = "0.14.3"
 thiserror = "1.0.31"
 
 [dev-dependencies]

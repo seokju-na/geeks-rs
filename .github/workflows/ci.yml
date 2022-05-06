@@ -1,7 +1,7 @@
 name: CI
 on: [pull_request]
 env:
-  RUST_BACKTRACE: 1
+  RUST_BACKTRACE: 'full'
 jobs:
   test:
     name: Test
