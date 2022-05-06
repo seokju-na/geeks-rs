@@ -26,18 +26,23 @@ where
   versions: HashMap<String, Version>,
 }
 
-impl<T> AggregateRoot<T>
+impl<T> Default for AggregateRoot<T>
 where
-  T: Aggregate + Clone,
-  T::Event: Clone,
+  T: Aggregate,
 {
-  pub fn new() -> Self {
+  fn default() -> Self {
     Self {
       states: HashMap::new(),
       versions: HashMap::new(),
     }
   }
+}
 
+impl<T> AggregateRoot<T>
+where
+  T: Aggregate + Clone,
+  T::Event: Clone,
+{
   pub fn get_state<K: AsRef<str>>(&self, id: K) -> Option<&T> {
     self.states.get(id.as_ref())
   }
@@ -70,14 +75,12 @@ where
 
 #[cfg(test)]
 mod test {
-  use std::assert_matches::assert_matches;
-
   use crate::testing::{Todo, TodoCommand, TodoError, TodoEvent, TodoStatus};
   use crate::{AggregateRoot, PersistedEvent};
 
   #[test]
   fn execute_command_and_returns_persisted_event() {
-    let mut todo_root: AggregateRoot<Todo> = AggregateRoot::new();
+    let mut todo_root: AggregateRoot<Todo> = AggregateRoot::default();
     let command = TodoCommand::CreateTodo {
       id: "todo_0".to_string(),
       title: "Drink soda".to_string(),
@@ -101,8 +104,8 @@ mod test {
 
   #[test]
   fn execute_command_can_mutates_state() {
-    let mut todo_root: AggregateRoot<Todo> = AggregateRoot::new();
-    assert_matches!(todo_root.get_state("todo_0"), None);
+    let mut todo_root: AggregateRoot<Todo> = AggregateRoot::default();
+    assert!(todo_root.get_state("todo_0").is_none());
 
     let command1 = TodoCommand::CreateTodo {
       id: "todo_0".to_string(),
@@ -111,13 +114,9 @@ mod test {
     };
     todo_root.execute_command(command1).unwrap();
 
-    let todo = todo_root.get_state("todo_0");
-    assert_matches!(
-      todo,
-      Some(x) if
-      x.title == "Eat rice"
-      && x.status == TodoStatus::Todo
-    );
+    let todo = todo_root.get_state("todo_0").unwrap();
+    assert_eq!(todo.title, "Eat rice");
+    assert_eq!(todo.status, TodoStatus::Todo);
 
     let command2 = TodoCommand::UpdateTodoTitle {
       id: "todo_0".to_string(),
@@ -125,13 +124,9 @@ mod test {
     };
     todo_root.execute_command(command2).unwrap();
 
-    let todo = todo_root.get_state("todo_0");
-    assert_matches!(
-      todo,
-      Some(x) if
-      x.title == "Eat pizza"
-      && x.status == TodoStatus::Todo
-    );
+    let todo = todo_root.get_state("todo_0").unwrap();
+    assert_eq!(todo.title, "Eat pizza");
+    assert_eq!(todo.status, TodoStatus::Todo);
 
     let command3 = TodoCommand::UpdateTodoStatus {
       id: "todo_0".to_string(),
@@ -139,19 +134,15 @@ mod test {
     };
     todo_root.execute_command(command3).unwrap();
 
-    let todo = todo_root.get_state("todo_0");
-    assert_matches!(
-      todo,
-      Some(x) if
-      x.title == "Eat pizza"
-      && x.status == TodoStatus::Done
-    );
+    let todo = todo_root.get_state("todo_0").unwrap();
+    assert_eq!(todo.title, "Eat pizza");
+    assert_eq!(todo.status, TodoStatus::Done);
   }
 
   #[test]
   fn execute_command_should_increase_state_version() {
-    let mut todo_root: AggregateRoot<Todo> = AggregateRoot::new();
-    assert_matches!(todo_root.get_version("todo_0"), None);
+    let mut todo_root: AggregateRoot<Todo> = AggregateRoot::default();
+    assert!(todo_root.get_version("todo_0").is_none());
 
     let command1 = TodoCommand::CreateTodo {
       id: "todo_0".to_string(),
@@ -159,19 +150,19 @@ mod test {
       status: None,
     };
     todo_root.execute_command(command1).unwrap();
-    assert_matches!(todo_root.get_version("todo_0"), Some(1));
+    assert_eq!(todo_root.get_version("todo_0").unwrap(), &1);
 
     let command2 = TodoCommand::UpdateTodoTitle {
       id: "todo_0".to_string(),
       title: "More rice".to_string(),
     };
     todo_root.execute_command(command2).unwrap();
-    assert_matches!(todo_root.get_version("todo_0"), Some(2));
+    assert_eq!(todo_root.get_version("todo_0").unwrap(), &2);
   }
 
   #[test]
   fn error_when_execute_command_fail() {
-    let mut todo_root: AggregateRoot<Todo> = AggregateRoot::new();
+    let mut todo_root: AggregateRoot<Todo> = AggregateRoot::default();
 
     let command1 = TodoCommand::CreateTodo {
       id: "todo_0".to_string(),
@@ -187,6 +178,6 @@ mod test {
     };
     let err = todo_root.execute_command(command2).unwrap_err();
 
-    assert_matches!(err, TodoError::AlreadyExists);
+    assert_eq!(err, TodoError::AlreadyExists);
   }
 }

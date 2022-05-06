@@ -1,5 +1,3 @@
-#![feature(assert_matches)]
-
 extern crate core;
 
 pub use crate::aggregate::{Aggregate, AggregateRoot};
