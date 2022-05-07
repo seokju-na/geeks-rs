@@ -1,0 +1,13 @@
+[package]
+name = "geeks_event_sourcing_git"
+description = "Git eventstore implementation for geeks productions."
+license = "MIT"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-trait = "0.1.53"
+serde = { version = "1.0.137", features = ["derive"] }
+
+geeks_event_sourcing = { path = "../geeks-event-sourcing" }
+geeks_git = { path = "../geeks-git" }
