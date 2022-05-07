@@ -54,7 +54,7 @@ where
   type Event = T;
   type Error = Infallible;
 
-  fn stream(
+  fn read(
     &self,
     id: &str,
     select: VersionSelect,

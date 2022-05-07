@@ -13,7 +13,7 @@ pub trait Eventstore: Send + Sync {
   type Event: Event;
   type Error: Send + Sync;
 
-  fn stream(
+  fn read(
     &self,
     id: &str,
     select: VersionSelect,
