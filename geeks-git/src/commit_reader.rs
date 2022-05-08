@@ -8,10 +8,17 @@ pub enum CommitReadStartOn {
   Oid(Oid),
 }
 
+pub type CommitReaderEndWhen = fn(&CommitInfo) -> bool;
+
+fn keep_reading(_: &CommitInfo) -> bool {
+  false
+}
+
 pub struct CommitReader<'a> {
   repo: &'a Repository,
   revwalk: Revwalk<'a>,
   start_on: CommitReadStartOn,
+  end_when: Option<CommitReaderEndWhen>,
   started: bool,
 }
 
@@ -23,6 +30,7 @@ impl<'a> CommitReader<'a> {
       repo,
       revwalk,
       start_on: CommitReadStartOn::Head,
+      end_when: None,
       started: false,
     })
   }
@@ -41,6 +49,14 @@ impl<'a> CommitReader<'a> {
   pub fn start_on(self, start: CommitReadStartOn) -> Self {
     Self {
       start_on: start,
+      ..self
+    }
+  }
+
+  #[must_use]
+  pub fn end_when(self, end_when: CommitReaderEndWhen) -> Self {
+    Self {
+      end_when: Some(end_when),
       ..self
     }
   }
@@ -72,10 +88,19 @@ impl<'a> Iterator for CommitReader<'a> {
       return Some(Err(e));
     }
 
-    self.revwalk.next().map(|x| match x {
+    let item = self.revwalk.next().map(|x| match x {
       Ok(oid) => self.repo.find_commit(oid).map(CommitInfo::from),
       Err(e) => Err(e),
-    })
+    });
+
+    if let Some(Ok(commit)) = &item {
+      let end_when = self.end_when.unwrap_or(keep_reading);
+      if end_when(commit) {
+        return None;
+      }
+    }
+
+    item
   }
 }
 
@@ -154,5 +179,39 @@ mod tests {
     assert_eq!(commits.len(), 2);
     assert!(commits[0].message.contains('3'));
     assert!(commits[1].message.contains('2'));
+  }
+
+  #[test]
+  fn should_read_commits_until_end() {
+    let fixture = FixtureRepository::setup_with_script(
+      r#"
+      git config --local user.email "test@test.com"
+      git config --local user.name "Test"
+
+      git commit --allow-empty -m "1"
+      git commit --allow-empty -m "2"
+      git commit --allow-empty -m "3"
+      git commit --allow-empty -m "4"
+      git commit --allow-empty -m "5"
+      "#,
+    );
+    let repo = Repository::open(&fixture.path).unwrap();
+    let reader = CommitReader::new(&repo)
+      .unwrap()
+      .start_on_head()
+      .end_when(|commit: &CommitInfo| commit.message.contains('3'));
+    let commits: Vec<_> = reader.map(|x| x.unwrap()).collect();
+
+    assert_eq!(commits.len(), 2);
+    assert!(commits[0].message.contains('5'));
+    assert!(commits[1].message.contains('4'));
+
+    let reader = CommitReader::new(&repo)
+      .unwrap()
+      .start_on_head()
+      .end_when(|commit: &CommitInfo| commit.message.contains('5'));
+    let commits: Vec<_> = reader.map(|x| x.unwrap()).collect();
+
+    assert_eq!(commits.len(), 0);
   }
 }
