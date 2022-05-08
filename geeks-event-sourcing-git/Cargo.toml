@@ -8,6 +8,13 @@ edition = "2021"
 [dependencies]
 async-trait = "0.1.53"
 serde = { version = "1.0.137", features = ["derive"] }
+serde_json = "1.0.81"
+git2 = "0.14.3"
 
 geeks_event_sourcing = { path = "../geeks-event-sourcing" }
 geeks_git = { path = "../geeks-git" }
+
+[dev-dependencies]
+tokio = { version = "1.18.1", features = ["full"] }
+
+geeks_git_testing = { path = "../geeks-git-testing" }
