@@ -1,8 +1,10 @@
 use git2::{Commit, Oid};
 
+use crate::CommitMessage;
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct CommitInfo {
-  pub message: String,
+  pub message: CommitMessage,
   pub time: i64,
   pub author_name: String,
   pub author_email: String,
@@ -11,7 +13,7 @@ pub struct CommitInfo {
 
 impl<'a> From<Commit<'a>> for CommitInfo {
   fn from(commit: Commit<'a>) -> Self {
-    let message = commit.message().unwrap_or("").to_string();
+    let message = CommitMessage::from(commit.message().unwrap_or(""));
     let author = commit.author();
 
     Self {

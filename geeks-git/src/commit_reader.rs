@@ -129,9 +129,9 @@ mod tests {
     let commits: Vec<_> = reader.map(|x| x.unwrap()).collect();
 
     assert_eq!(commits.len(), 3);
-    assert!(commits[0].message.contains('3'));
-    assert!(commits[1].message.contains('2'));
-    assert!(commits[2].message.contains('1'));
+    assert_eq!(commits[0].message, "3".into());
+    assert_eq!(commits[1].message, "2".into());
+    assert_eq!(commits[2].message, "1".into());
   }
 
   #[test]
@@ -156,8 +156,8 @@ mod tests {
     let commits: Vec<_> = reader.map(|x| x.unwrap()).collect();
 
     assert_eq!(commits.len(), 2);
-    assert!(commits[0].message.contains('2'));
-    assert!(commits[1].message.contains('1'));
+    assert_eq!(commits[0].message, "2".into());
+    assert_eq!(commits[1].message, "1".into());
   }
 
   #[test]
@@ -177,8 +177,8 @@ mod tests {
     let commits: Vec<_> = reader.take(2).map(|x| x.unwrap()).collect();
 
     assert_eq!(commits.len(), 2);
-    assert!(commits[0].message.contains('3'));
-    assert!(commits[1].message.contains('2'));
+    assert_eq!(commits[0].message, "3".into());
+    assert_eq!(commits[1].message, "2".into());
   }
 
   #[test]
@@ -199,17 +199,17 @@ mod tests {
     let reader = CommitReader::new(&repo)
       .unwrap()
       .start_on_head()
-      .end_when(|commit: &CommitInfo| commit.message.contains('3'));
+      .end_when(|commit: &CommitInfo| commit.message.subject == "3");
     let commits: Vec<_> = reader.map(|x| x.unwrap()).collect();
 
     assert_eq!(commits.len(), 2);
-    assert!(commits[0].message.contains('5'));
-    assert!(commits[1].message.contains('4'));
+    assert_eq!(commits[0].message, "5".into());
+    assert_eq!(commits[1].message, "4".into());
 
     let reader = CommitReader::new(&repo)
       .unwrap()
       .start_on_head()
-      .end_when(|commit: &CommitInfo| commit.message.contains('5'));
+      .end_when(|commit: &CommitInfo| commit.message.subject == "5");
     let commits: Vec<_> = reader.map(|x| x.unwrap()).collect();
 
     assert_eq!(commits.len(), 0);
