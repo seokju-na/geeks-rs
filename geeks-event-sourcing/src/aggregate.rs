@@ -64,7 +64,7 @@ where
     *version += 1;
 
     let persisted = PersistedEvent {
-      stream_id: id,
+      aggregate_id: id,
       version: *version,
       event,
     };
@@ -91,7 +91,7 @@ mod test {
     assert_eq!(
       persisted,
       PersistedEvent {
-        stream_id: "todo_0".to_string(),
+        aggregate_id: "todo_0".to_string(),
         version: 1,
         event: TodoEvent::TodoCreated {
           id: "todo_0".to_string(),

@@ -11,7 +11,7 @@ pub struct PersistedEvent<T>
 where
   T: Event,
 {
-  pub stream_id: String,
+  pub aggregate_id: String,
   pub version: Version,
   pub event: T,
 }

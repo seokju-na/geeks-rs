@@ -1,5 +1,5 @@
+use std::collections::HashMap;
 use std::{
-  collections::HashMap,
   convert::Infallible,
   sync::{Arc, RwLock},
 };
@@ -13,7 +13,7 @@ struct InMemoryBackend<T>
 where
   T: Event,
 {
-  streams: HashMap<String, Vec<PersistedEvent<T>>>,
+  events: HashMap<String, Vec<PersistedEvent<T>>>,
 }
 
 impl<T> Default for InMemoryBackend<T>
@@ -22,20 +22,20 @@ where
 {
   fn default() -> Self {
     Self {
-      streams: HashMap::default(),
+      events: HashMap::default(),
     }
   }
 }
 
 #[derive(Debug, Clone)]
-pub struct InMemory<T>
+pub struct InMemoryEventstore<T>
 where
   T: Event,
 {
   backend: Arc<RwLock<InMemoryBackend<T>>>,
 }
 
-impl<T> Default for InMemory<T>
+impl<T> Default for InMemoryEventstore<T>
 where
   T: Event,
 {
@@ -47,22 +47,22 @@ where
 }
 
 #[async_trait]
-impl<T> Eventstore for InMemory<T>
+impl<T> Eventstore for InMemoryEventstore<T>
 where
   T: Event + Clone,
 {
   type Event = T;
   type Error = Infallible;
 
-  fn read(
+  async fn read(
     &self,
-    id: &str,
+    aggregate_id: String,
     select: VersionSelect,
   ) -> Result<Vec<PersistedEvent<Self::Event>>, Self::Error> {
     let backend = self.backend.read().expect("locked");
     let events: Vec<_> = backend
-      .streams
-      .get(id)
+      .events
+      .get(&aggregate_id)
       .cloned()
       .unwrap_or_default()
       .into_iter()
@@ -75,24 +75,19 @@ where
     Ok(events)
   }
 
-  async fn append(
-    &self,
-    id: String,
-    events: Vec<PersistedEvent<Self::Event>>,
-  ) -> Result<(), Self::Error> {
-    let mut events_to_append = events.into_iter().collect();
+  async fn append(&self, events: Vec<PersistedEvent<Self::Event>>) -> Result<(), Self::Error> {
     let mut backend = self
       .backend
       .write()
       .expect("acquire write lock on event store backend");
 
-    backend
-      .streams
-      .entry(id)
-      .and_modify(|x| {
-        x.append(&mut events_to_append);
-      })
-      .or_insert_with(|| events_to_append);
+    events.into_iter().for_each(|event| {
+      backend
+        .events
+        .entry(event.aggregate_id.to_owned())
+        .and_modify(|x| x.push(event.clone()))
+        .or_insert_with(|| vec![event]);
+    });
 
     Ok(())
   }
