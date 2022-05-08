@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 #[cfg(test)]
 pub(crate) mod git {
   use std::path::PathBuf;
