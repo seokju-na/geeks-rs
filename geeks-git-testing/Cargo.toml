@@ -1,0 +1,10 @@
+[package]
+name = "geeks_git_testing"
+description = "Git testing crate for geeks productions."
+license = "MIT"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+run_script = "0.9.0"
+nanoid = "0.4.0"

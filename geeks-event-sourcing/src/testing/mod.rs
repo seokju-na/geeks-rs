@@ -1,5 +1,5 @@
-pub use self::store::*;
+pub use self::mem_eventstore::*;
 pub use self::todo_domain::*;
 
-mod store;
+mod mem_eventstore;
 mod todo_domain;

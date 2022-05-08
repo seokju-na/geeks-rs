@@ -36,8 +36,9 @@ where
 
 #[cfg(test)]
 mod tests {
+  use geeks_git_testing::FixtureRepository;
+
   use crate::commit_reader::CommitReader;
-  use crate::testing::git::FixtureRepository;
 
   use super::*;
 
@@ -67,8 +68,8 @@ mod tests {
     let commits: Vec<_> = reader.map(|x| x.unwrap()).collect();
 
     assert_eq!(commits.len(), 3);
-    assert_eq!(commits[0].message, "3");
-    assert_eq!(commits[1].message, "2");
-    assert_eq!(commits[2].message, "1");
+    assert_eq!(commits[0].message, "3".into());
+    assert_eq!(commits[1].message, "2".into());
+    assert_eq!(commits[2].message, "1".into());
   }
 }

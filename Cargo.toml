@@ -1,5 +1,7 @@
 [workspace]
 members = [
   "geeks-event-sourcing",
-  "geeks-git"
+  "geeks-event-sourcing-git",
+  "geeks-git",
+  "geeks-git-testing"
 ]

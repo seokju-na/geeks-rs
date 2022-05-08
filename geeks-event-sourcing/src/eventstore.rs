@@ -13,15 +13,11 @@ pub trait Eventstore: Send + Sync {
   type Event: Event;
   type Error: Send + Sync;
 
-  fn stream(
+  async fn read(
     &self,
-    id: &str,
+    aggregate_id: String,
     select: VersionSelect,
   ) -> Result<Vec<PersistedEvent<Self::Event>>, Self::Error>;
 
-  async fn append(
-    &self,
-    id: String,
-    events: Vec<PersistedEvent<Self::Event>>,
-  ) -> Result<(), Self::Error>;
+  async fn append(&self, events: Vec<PersistedEvent<Self::Event>>) -> Result<(), Self::Error>;
 }
