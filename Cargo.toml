@@ -2,5 +2,6 @@
 members = [
   "geeks-event-sourcing",
   "geeks-event-sourcing-git",
-  "geeks-git"
+  "geeks-git",
+  "geeks-git-testing"
 ]

@@ -13,4 +13,3 @@ mod commit_message;
 mod commit_reader;
 mod error;
 mod repository;
-mod testing;

@@ -36,8 +36,9 @@ where
 
 #[cfg(test)]
 mod tests {
+  use geeks_git_testing::FixtureRepository;
+
   use crate::commit_reader::CommitReader;
-  use crate::testing::git::FixtureRepository;
 
   use super::*;
 

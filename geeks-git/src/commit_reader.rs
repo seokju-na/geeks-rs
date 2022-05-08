@@ -108,7 +108,7 @@ impl<'a> Iterator for CommitReader<'a> {
 mod tests {
   use git2::Repository;
 
-  use crate::testing::git::FixtureRepository;
+  use geeks_git_testing::FixtureRepository;
 
   use super::*;
 
