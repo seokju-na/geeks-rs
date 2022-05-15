@@ -23,6 +23,8 @@ impl FixtureRepository {
             mkdir -p {}
             cd {}
             git init
+            git config --local user.email "test@test.com"
+            git config --local user.name "Test"
             {}
             "#,
       path_as_str, path_as_str, setup_script

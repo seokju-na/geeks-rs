@@ -42,7 +42,6 @@ mod tests {
   fn should_write_all_files_with_snapshot_commit() {
     let fixture = FixtureRepository::setup_with_script(
       r#"
-    git config --local user.email "test@test.com"
     git commit --allow-empty -m "initial"
     echo "A" > a.txt
     echo "B" > b.txt
@@ -63,7 +62,6 @@ mod tests {
   fn should_not_create_snapshot_commit_when_workdir_clean() {
     let fixture = FixtureRepository::setup_with_script(
       r#"
-    git config --local user.email "test@test.com"
     git commit --allow-empty -m "initial"
     echo "A" > a.txt
     git add a.txt
@@ -78,7 +76,6 @@ mod tests {
   fn should_not_create_snapshot_commit_when_head_is_snapshot_commit() {
     let fixture = FixtureRepository::setup_with_script(
       r#"
-    git config --local user.email "test@test.com"
     git commit --allow-empty -m "initial"
     echo "A" > a.txt
     "#,

@@ -100,11 +100,7 @@ mod tests {
       title: "Eat pizza".to_string(),
     };
 
-    let fixture = FixtureRepository::setup_with_script(
-      r#"
-    git config --local user.email "test@test.com"
-    "#,
-    );
+    let fixture = FixtureRepository::setup();
     let eventstore = GitEventstore::new(fixture.path.clone());
     eventstore
       .append(vec![

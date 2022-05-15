@@ -44,21 +44,13 @@ mod tests {
 
   #[test]
   fn should_commit_on_head() {
-    let fixture = FixtureRepository::setup_with_script(
-      r#"
-    git config --local user.email "test@test.com"
-    "#,
-    );
+    let fixture = FixtureRepository::setup();
     commit(&fixture.path, "hello").unwrap();
   }
 
   #[test]
   fn should_commit_and_read() {
-    let fixture = FixtureRepository::setup_with_script(
-      r#"
-    git config --local user.email "test@test.com"
-    "#,
-    );
+    let fixture = FixtureRepository::setup();
     commit(&fixture.path, "1").unwrap();
     commit(&fixture.path, "2").unwrap();
     commit(&fixture.path, "3").unwrap();
