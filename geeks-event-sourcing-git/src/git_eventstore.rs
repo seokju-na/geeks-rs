@@ -14,7 +14,6 @@ pub struct GitEventstore<T>
 where
   T: Event,
 {
-  pub name: String,
   repo_path: PathBuf,
   _event: PhantomData<T>,
 }
@@ -23,9 +22,8 @@ impl<T> GitEventstore<T>
 where
   T: Event + Clone + Serialize + DeserializeOwned,
 {
-  pub fn new(name: &str, repo_path: PathBuf) -> Self {
+  pub fn new(repo_path: PathBuf) -> Self {
     Self {
-      name: String::from(name),
       repo_path,
       _event: PhantomData::default(),
     }
@@ -85,10 +83,11 @@ where
 
 #[cfg(test)]
 mod tests {
-  use crate::git_eventstore::GitEventstore;
   use geeks_event_sourcing::testing::{TodoEvent, TodoStatus};
   use geeks_event_sourcing::{Event, Eventstore, PersistedEvent, VersionSelect};
   use geeks_git_testing::FixtureRepository;
+
+  use crate::git_eventstore::GitEventstore;
 
   #[tokio::test]
   async fn should_read_events() {
@@ -106,7 +105,7 @@ mod tests {
     git config --local user.email "test@test.com"
     "#,
     );
-    let eventstore = GitEventstore::new("test", fixture.path.clone());
+    let eventstore = GitEventstore::new(fixture.path.clone());
     eventstore
       .append(vec![
         PersistedEvent {
