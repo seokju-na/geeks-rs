@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::Version;
 
-pub trait Event: Send + Sync {
+pub trait Event: Send + Sync + Clone {
   fn name(&self) -> &'static str;
 }
 
