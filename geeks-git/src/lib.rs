@@ -4,6 +4,7 @@ pub use crate::commit_message::*;
 pub use crate::commit_reader::*;
 pub use crate::error::*;
 pub use crate::repository::*;
+pub use crate::status::*;
 
 pub type GitResult<T> = Result<T, GitError>;
 
@@ -13,3 +14,4 @@ mod commit_message;
 mod commit_reader;
 mod error;
 mod repository;
+mod status;

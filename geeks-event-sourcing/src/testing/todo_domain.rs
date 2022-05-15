@@ -1,7 +1,15 @@
+use std::collections::HashMap;
+use std::io;
+use std::path::{Path, PathBuf};
+use std::str::{from_utf8, Utf8Error};
+
+use async_trait::async_trait;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
+use serde_json::{from_str, to_value};
+use tokio::fs::{read, write};
 
-use crate::{Aggregate, Command, Event, Timestamp};
+use crate::{Aggregate, AggregateRoot, Command, Event, Snapshot, Timestamp, Version};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "name")]
@@ -153,5 +161,69 @@ impl Aggregate for Todo {
         None => Err(TodoError::NotExists),
       },
     }
+  }
+}
+
+pub struct TodoSnapshot {
+  file_path: PathBuf,
+}
+
+impl TodoSnapshot {
+  pub fn new(dir: &Path) -> Self {
+    Self {
+      file_path: dir.join("todo"),
+    }
+  }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct TodoSnapshotData {
+  states: HashMap<String, Todo>,
+  versions: HashMap<String, Version>,
+}
+
+impl From<AggregateRoot<Todo>> for TodoSnapshotData {
+  fn from(root: AggregateRoot<Todo>) -> Self {
+    Self {
+      states: root.states,
+      versions: root.versions,
+    }
+  }
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum TodoSnapshotError {
+  #[error("io error: {0}")]
+  IoError(#[source] io::Error),
+
+  #[error("utf8 error: {0}")]
+  Utf8Error(#[source] Utf8Error),
+
+  #[error("json parse error: {0}")]
+  JsonParseError(#[source] serde_json::Error),
+}
+
+#[async_trait]
+impl Snapshot<Todo> for TodoSnapshot {
+  type Error = TodoSnapshotError;
+
+  async fn load(&self) -> Result<AggregateRoot<Todo>, Self::Error> {
+    let raw = read(&self.file_path)
+      .await
+      .map_err(TodoSnapshotError::IoError)?;
+    let raw_str = from_utf8(&raw).map_err(TodoSnapshotError::Utf8Error)?;
+    let data = from_str::<TodoSnapshotData>(raw_str).map_err(TodoSnapshotError::JsonParseError)?;
+
+    Ok(AggregateRoot::new(data.states, data.versions))
+  }
+
+  async fn save(&self, root: AggregateRoot<Todo>) -> Result<(), Self::Error> {
+    let data: TodoSnapshotData = root.into();
+    let raw_data = to_value(data).map_err(TodoSnapshotError::JsonParseError)?;
+    write(&self.file_path, raw_data.to_string().as_bytes())
+      .await
+      .map_err(TodoSnapshotError::IoError)?;
+
+    Ok(())
   }
 }

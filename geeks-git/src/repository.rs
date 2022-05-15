@@ -1,6 +1,6 @@
 use git2::{Error, ErrorCode, Oid, Repository, Signature};
 
-use crate::{GitError, GitResult};
+use crate::{CommitInfo, GitError, GitResult};
 
 pub fn get_head(repo: &Repository) -> GitResult<Oid> {
   let head = repo.head()?.target();
@@ -8,6 +8,13 @@ pub fn get_head(repo: &Repository) -> GitResult<Oid> {
     Some(x) => Ok(x),
     None => Err(GitError::NoHead),
   }
+}
+
+pub fn get_head_commit(repo: &Repository) -> GitResult<CommitInfo> {
+  let head = get_head(repo)?;
+  let commit = repo.find_commit(head).map(CommitInfo::from)?;
+
+  Ok(commit)
 }
 
 pub(crate) fn get_signature(repo: &Repository) -> Result<Signature<'_>, Error> {
@@ -29,4 +36,25 @@ pub(crate) fn get_signature(repo: &Repository) -> Result<Signature<'_>, Error> {
   }
 
   sig
+}
+
+#[cfg(test)]
+mod tests {
+  use geeks_git_testing::FixtureRepository;
+  use git2::Repository;
+
+  use super::*;
+
+  #[test]
+  fn should_get_head_commit() {
+    let fixture = FixtureRepository::setup_with_script(
+      r#"
+    git commit --allow-empty -m "initial"
+    "#,
+    );
+    let repo = Repository::open(&fixture.path).unwrap();
+    let head_commit = get_head_commit(&repo).unwrap();
+
+    assert_eq!(head_commit.message, "initial".into());
+  }
 }

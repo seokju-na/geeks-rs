@@ -23,16 +23,17 @@ impl FixtureRepository {
             mkdir -p {}
             cd {}
             git init
+            git config --local user.email "test@test.com"
+            git config --local user.name "Test"
             {}
             "#,
       path_as_str, path_as_str, setup_script
     );
-    let (exit_code, output, error) = run(&init_script, &vec![], &ScriptOptions::new()).unwrap();
+    let (exit_code, output, _) = run(&init_script, &vec![], &ScriptOptions::new()).unwrap();
+    println!("script output: {}", output);
     if exit_code != 0 {
-      println!("script err: {}", error);
       panic!("exit with {}", exit_code);
     }
-    println!("script output: {}", output);
 
     Self { path }
   }
