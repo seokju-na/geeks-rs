@@ -2,6 +2,9 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum GitError {
+  #[error("{0}")]
+  Generic(String),
+
   #[error("git: no head found")]
   NoHead,
 
