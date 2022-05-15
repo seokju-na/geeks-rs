@@ -12,8 +12,8 @@ serde_json = "1.0.81"
 git2 = "0.14.3"
 thiserror = "1.0.31"
 
-geeks_event_sourcing = { path = "../event-sourcing" }
-geeks_git = { path = "../git" }
+geeks_event_sourcing = "0.2.0"
+geeks_git = "0.2.0"
 
 [dev-dependencies]
 chrono = "0.4.19"
