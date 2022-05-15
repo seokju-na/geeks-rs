@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{Command, Event, PersistedEvent, Version};
 
-pub trait Aggregate: Sized + Send + Sync {
+pub trait Aggregate: Sized + Send + Sync + Clone {
   type Command: Command;
   type Event: Event;
   type Error: Send + Sync;
@@ -17,13 +17,13 @@ pub trait Aggregate: Sized + Send + Sync {
   fn apply_event(this: Option<Self>, event: Self::Event) -> Result<Self, Self::Error>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AggregateRoot<T>
 where
   T: Aggregate,
 {
-  states: HashMap<String, T>,
-  versions: HashMap<String, Version>,
+  pub states: HashMap<String, T>,
+  pub versions: HashMap<String, Version>,
 }
 
 impl<T> Default for AggregateRoot<T>
@@ -40,9 +40,12 @@ where
 
 impl<T> AggregateRoot<T>
 where
-  T: Aggregate + Clone,
-  T::Event: Clone,
+  T: Aggregate,
 {
+  pub fn new(states: HashMap<String, T>, versions: HashMap<String, Version>) -> Self {
+    Self { states, versions }
+  }
+
   pub fn get_state<K: AsRef<str>>(&self, id: K) -> Option<&T> {
     self.states.get(id.as_ref())
   }
@@ -70,6 +73,16 @@ where
     };
 
     Ok(persisted)
+  }
+
+  pub fn save_events(&mut self, events: Vec<PersistedEvent<T::Event>>) -> Result<(), T::Error> {
+    for persisted in events {
+      let id = persisted.aggregate_id.to_owned();
+      let state = T::apply_event(self.states.get(&id).cloned(), persisted.event)?;
+      self.states.insert(id, state);
+    }
+
+    Ok(())
   }
 }
 
