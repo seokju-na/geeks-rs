@@ -16,4 +16,4 @@ chrono = "0.4.19"
 tokio = { version = "1.18.1", features = ["full"] }
 
 [dev-dependencies]
-geeks_git_testing = { path = "../geeks-git-testing" }
+geeks_git_testing = { path = "../git-testing" }
