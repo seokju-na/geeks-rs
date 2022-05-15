@@ -1,3 +1,4 @@
+/// codes from https://github.com/extrawurst/gitui/blob/master/asyncgit/src/sync/status.rs
 use std::path::Path;
 
 use git2::{Delta, Repository, Status, StatusOptions, StatusShow};
