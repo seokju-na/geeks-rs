@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 
+use crate::SNAPSHOT_MSG;
 use async_trait::async_trait;
 use geeks_event_sourcing::{Event, Eventstore, PersistedEvent, VersionSelect};
 use geeks_git::{commit, CommitInfo, CommitMessage, CommitReader, GitError};
@@ -8,6 +9,8 @@ use git2::Repository;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::{from_str, to_string};
+
+pub const EVENT_MSG: &str = "[event]";
 
 pub struct GitEventstore<T>
 where
@@ -30,13 +33,36 @@ where
 
   fn event_to_commit_message(persisted: PersistedEvent<T>) -> CommitMessage {
     CommitMessage {
-      subject: format!("[event] {}", persisted.event.name()),
+      subject: format!(
+        "{prefix} {event_name}",
+        prefix = EVENT_MSG,
+        event_name = persisted.event.name()
+      ),
       body: to_string(&persisted).unwrap(),
     }
   }
 
-  fn commit_to_event(commit: CommitInfo) -> PersistedEvent<T> {
-    from_str(&commit.message.body).unwrap()
+  fn commit_to_event(commit: CommitInfo) -> Option<PersistedEvent<T>> {
+    if !commit.message.subject.contains(EVENT_MSG) {
+      return None;
+    }
+
+    match from_str(&commit.message.body) {
+      Ok(x) => Some(x),
+      Err(_) => None,
+    }
+  }
+
+  async fn read_until_snapshot(&self) -> Result<Vec<PersistedEvent<T>>, GitError> {
+    let repo = Repository::open(&self.repo_path)?;
+    let events: Vec<_> = CommitReader::new(&repo)?
+      .start_on_head()
+      .end_when(|x| x.message.subject.contains(SNAPSHOT_MSG))
+      .flatten()
+      .filter_map(GitEventstore::commit_to_event)
+      .collect();
+
+    Ok(events)
   }
 }
 
@@ -54,9 +80,10 @@ where
     select: VersionSelect,
   ) -> Result<Vec<PersistedEvent<Self::Event>>, Self::Error> {
     let repo = Repository::open(&self.repo_path)?;
-    let reader = CommitReader::new(&repo)?.start_on_head();
-    let events: Vec<_> = reader
-      .flat_map(|x| x.map(GitEventstore::commit_to_event))
+    let events: Vec<_> = CommitReader::new(&repo)?
+      .start_on_head()
+      .flatten()
+      .filter_map(GitEventstore::commit_to_event)
       .filter(|event| event.aggregate_id == aggregate_id)
       .filter(|event| match select {
         VersionSelect::All => true,

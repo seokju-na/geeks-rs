@@ -1,10 +1,11 @@
 use std::path::Path;
 
+use geeks_git::{
+  commit, get_head_commit, get_status, CommitInfo, CommitReader, GitResult, StatusType,
+};
 use git2::{IndexAddOption, Oid, Repository};
 
-use geeks_git::{commit, get_head_commit, get_status, GitResult, StatusType};
-
-const SNAPSHOT_MSG: &str = "[snapshot]";
+pub const SNAPSHOT_MSG: &str = "[snapshot]";
 
 pub fn commit_snapshot<P>(repo_path: P) -> GitResult<Option<Oid>>
 where
@@ -31,9 +32,9 @@ where
 
 #[cfg(test)]
 mod tests {
+  use geeks_git::{get_status, CommitInfo, StatusType};
   use git2::Repository;
 
-  use geeks_git::{get_status, CommitInfo, StatusType};
   use geeks_git_testing::FixtureRepository;
 
   use super::*;
