@@ -48,7 +48,7 @@ where
       return None;
     }
 
-    match from_str(&commit.message.body) {
+    match from_str(commit.message.body.trim()) {
       Ok(x) => Some(x),
       Err(_) => None,
     }
