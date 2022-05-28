@@ -79,7 +79,8 @@ where
     for persisted in events {
       let id = persisted.aggregate_id.to_owned();
       let state = T::apply_event(self.states.get(&id).cloned(), persisted.event)?;
-      self.states.insert(id, state);
+      self.states.insert(id.to_owned(), state);
+      self.versions.insert(id.to_owned(), persisted.version);
     }
 
     Ok(())
@@ -192,5 +193,36 @@ mod test {
     let err = todo_root.execute_command(command2).unwrap_err();
 
     assert_eq!(err, TodoError::AlreadyExists);
+  }
+
+  #[test]
+  fn save_events() {
+    let events = vec![
+      PersistedEvent {
+        aggregate_id: "todo_0".to_string(),
+        version: 1,
+        event: TodoEvent::TodoCreated {
+          id: "todo_0".to_string(),
+          title: "Drink soda".to_string(),
+          status: TodoStatus::InProgress,
+        },
+      },
+      PersistedEvent {
+        aggregate_id: "todo_0".to_string(),
+        version: 2,
+        event: TodoEvent::TodoTitleUpdated {
+          title: "Coding".to_string(),
+        },
+      },
+    ];
+    let mut root: AggregateRoot<Todo> = AggregateRoot::default();
+    root.save_events(events).unwrap();
+
+    let state = root.get_state("todo_0").unwrap();
+    let version = root.get_version("todo_0").unwrap();
+
+    assert_eq!(state.title, "Coding");
+    assert_eq!(state.status, TodoStatus::InProgress);
+    assert_eq!(*version, 2);
   }
 }
