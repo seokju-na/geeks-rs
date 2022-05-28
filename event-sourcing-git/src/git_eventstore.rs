@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 
-use crate::SNAPSHOT_MSG;
 use async_trait::async_trait;
 use geeks_event_sourcing::{Event, Eventstore, PersistedEvent, VersionSelect};
 use geeks_git::{commit, CommitInfo, CommitMessage, CommitReader, GitError};
@@ -9,6 +8,8 @@ use git2::Repository;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::{from_str, to_string};
+
+use crate::SNAPSHOT_MSG;
 
 pub const EVENT_MSG: &str = "[event]";
 
@@ -53,7 +54,7 @@ where
     }
   }
 
-  async fn read_until_snapshot(&self) -> Result<Vec<PersistedEvent<T>>, GitError> {
+  pub async fn read_until_snapshot(&self) -> Result<Vec<PersistedEvent<T>>, GitError> {
     let repo = Repository::open(&self.repo_path)?;
     let events: Vec<_> = CommitReader::new(&repo)?
       .start_on_head()
