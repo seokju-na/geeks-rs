@@ -20,7 +20,7 @@ where
 
 impl<T> GitEventstore<T>
 where
-  T: Event + Clone + Serialize + DeserializeOwned,
+  T: Event + Serialize + DeserializeOwned,
 {
   pub fn new(repo_path: PathBuf) -> Self {
     Self {
@@ -44,7 +44,7 @@ where
 #[async_trait]
 impl<T> Eventstore for GitEventstore<T>
 where
-  T: Event + Clone + Serialize + DeserializeOwned,
+  T: Event + Serialize + DeserializeOwned,
 {
   type Event = T;
   type Error = GitError;
