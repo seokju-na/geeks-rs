@@ -53,8 +53,8 @@ where
 }
 
 pub async fn load_aggregate<T, E, S>(
-  eventstore: &E,
-  snapshot: &S,
+  eventstore: E,
+  snapshot: S,
 ) -> Result<AggregateRoot<T>, Error<T::Error, E::Error, S::Error>>
 where
   T: Aggregate,
@@ -62,7 +62,7 @@ where
   S: Snapshot<T>,
 {
   let mut root = snapshot.load().await.map_err(Error::SnapshotError)?;
-  let unsaved_events = get_unsaved_events(&root, eventstore)
+  let unsaved_events = get_unsaved_events(&root, &eventstore)
     .await
     .map_err(Error::EventstoreError)?;
 
