@@ -2,7 +2,7 @@
 name = "geeks_event_sourcing_git"
 description = "Git eventstore implementation for geeks productions."
 license = "MIT"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 
 [dependencies]

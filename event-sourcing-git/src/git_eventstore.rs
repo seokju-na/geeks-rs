@@ -1,14 +1,13 @@
 use std::marker::PhantomData;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
+use geeks_event_sourcing::{Event, Eventstore, PersistedEvent, VersionSelect};
+use geeks_git::{commit, CommitInfo, CommitMessage, CommitReader, GitError};
 use git2::Repository;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::{from_str, to_string};
-
-use geeks_event_sourcing::{Event, Eventstore, PersistedEvent, VersionSelect};
-use geeks_git::{commit, CommitInfo, CommitMessage, CommitReader, GitError};
 
 pub struct GitEventstore<T>
 where
@@ -22,9 +21,9 @@ impl<T> GitEventstore<T>
 where
   T: Event + Serialize + DeserializeOwned,
 {
-  pub fn new(repo_path: PathBuf) -> Self {
+  pub fn new(repo_path: &Path) -> Self {
     Self {
-      repo_path,
+      repo_path: repo_path.to_path_buf(),
       _event: PhantomData::default(),
     }
   }
@@ -85,6 +84,7 @@ where
 mod tests {
   use geeks_event_sourcing::testing::{TodoEvent, TodoStatus};
   use geeks_event_sourcing::{Event, Eventstore, PersistedEvent, VersionSelect};
+
   use geeks_git_testing::FixtureRepository;
 
   use crate::git_eventstore::GitEventstore;
@@ -101,7 +101,7 @@ mod tests {
     };
 
     let fixture = FixtureRepository::setup();
-    let eventstore = GitEventstore::new(fixture.path.clone());
+    let eventstore = GitEventstore::new(&fixture.path);
     eventstore
       .append(vec![
         PersistedEvent {
