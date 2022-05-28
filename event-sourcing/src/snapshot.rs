@@ -1,5 +1,6 @@
-use crate::{Aggregate, AggregateRoot};
 use async_trait::async_trait;
+
+use crate::{Aggregate, AggregateRoot};
 
 #[async_trait]
 pub trait Snapshot<T>
@@ -15,11 +16,14 @@ where
 
 #[cfg(test)]
 mod tests {
+  use std::collections::HashMap;
+
+  use chrono::Utc;
+
+  use geeks_git_testing::FixtureRepository;
+
   use crate::testing::{Todo, TodoSnapshot, TodoStatus};
   use crate::{AggregateRoot, Snapshot};
-  use chrono::Utc;
-  use geeks_git_testing::FixtureRepository;
-  use std::collections::HashMap;
 
   #[tokio::test]
   async fn should_load_snapshot_from_fs() {
