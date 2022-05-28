@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use geeks_git::{commit, get_head_commit, get_status, CommitReader, GitResult, StatusType};
+use geeks_git::{commit, get_head_commit, get_status, GitResult, StatusType};
 use git2::{IndexAddOption, Oid, Repository};
 
 pub const SNAPSHOT_MSG: &str = "[snapshot]";
