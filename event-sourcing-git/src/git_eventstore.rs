@@ -56,13 +56,14 @@ where
 
   pub async fn read_until_snapshot(&self) -> Result<Vec<PersistedEvent<T>>, GitError> {
     let repo = Repository::open(&self.repo_path)?;
-    let events: Vec<_> = CommitReader::new(&repo)?
+    let mut events: Vec<_> = CommitReader::new(&repo)?
       .start_on_head()
       .end_when(|x| x.message.subject.contains(SNAPSHOT_MSG))
       .flatten()
       .filter_map(GitEventstore::commit_to_event)
       .collect();
 
+    events.reverse();
     Ok(events)
   }
 }
@@ -81,7 +82,7 @@ where
     select: VersionSelect,
   ) -> Result<Vec<PersistedEvent<Self::Event>>, Self::Error> {
     let repo = Repository::open(&self.repo_path)?;
-    let events: Vec<_> = CommitReader::new(&repo)?
+    let mut events: Vec<_> = CommitReader::new(&repo)?
       .start_on_head()
       .flatten()
       .filter_map(GitEventstore::commit_to_event)
@@ -92,6 +93,7 @@ where
       })
       .collect();
 
+    events.reverse();
     Ok(events)
   }
 
@@ -134,13 +136,13 @@ mod tests {
       .append(vec![
         PersistedEvent {
           aggregate_id: "todo1".to_string(),
-          version: 1,
-          event: event1,
+          version: 2,
+          event: event2,
         },
         PersistedEvent {
           aggregate_id: "todo1".to_string(),
-          version: 2,
-          event: event2,
+          version: 1,
+          event: event1,
         },
       ])
       .await
